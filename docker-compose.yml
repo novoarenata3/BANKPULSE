@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  bankpulse-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=bankpulse-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=bankpulse_pass
+      - DB_NAME=bankpulse_db
+    depends_on:
+      bankpulse-db:
+        condition: service_healthy
+
+  bankpulse-db:
+    image: postgres:15-alpine
+    container_name: bankpulse-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: bankpulse_pass
+      POSTGRES_DB: bankpulse_db
+    volumes:
+      - bankpulse_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bankpulse_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  bankpulse_data:
